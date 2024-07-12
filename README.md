@@ -15,8 +15,8 @@ The dataset includes the following features:
 - **PurchaseStatus (Target Variable):** Likelihood of the customer making a purchase (0: No, 1: Yes)
 
 ## Project Structure
-- `data/`: Contains the dataset (`customer_purchase_data.csv`)
-- `notebooks/`: Jupyter notebooks for data exploration and model development
+- `data/`: This is the main Flask application file containing routing and application logic.
+- `notebooks/`: Visual Studio Code for data exploration and model development
 - `src/`: Source code for data preprocessing, feature engineering, model training, and evaluation
 - `models/`: Saved machine learning models
 - `reports/`: Analysis reports and visualizations
@@ -26,4 +26,4 @@ The dataset includes the following features:
 1. Clone the repository: `git clone https://github.com/yourusername/FinalProject-SummerCourse-Group18-Predict-Customer-Purchase-Behavior.git`
 2. Navigate to the project directory: `cd FinalProject-SummerCourse-Group18-Predict-Customer-Purchase-Behavior`
 3. Install the required dependencies: `pip install -r requirements.txt`
-4. Run the Jupyter notebooks in the `notebooks/` directory to explore the data and build models.
+4. Run the code.
