@@ -104,18 +104,42 @@
                 <div class="card">
                   <div class="card-body">
                     <div class="d-flex flex-wrap justify-content-between">
-                      <h4 class="card-title mb-3">Distribution of Purchases by Product Category</h4>
+                      <h4 class="card-title mb-2">Distribution of Time Spent on Website</h4>
                     </div>
-                    <div class="mt-2">
-                      <div class="d-flex justify-content-between">
-                        <div>{{ category_graph|safe }}</div>
+                      <div class="col-12">
+                          <div>{{ time_spent_graph|safe }}</div>
                       </div>
-                      
-                    <canvas id="salesTopChart"></canvas>
+                  </div>
+                </div>
+                </div>
+            </div>
+            
+            <div class="row  mt-3">
+              <div class="col-xl-5 d-flex grid-margin stretch-card">
+                <div class="card">
+                  <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between">
+                      <h4 class="card-title mb-2">Distribution of Purchases by Product Category</h4>
+                    </div>
+                      <div class="col-12">
+                          <div>{{ category_graph|safe }}</div>
+                      </div>
                   </div>
                 </div>
               </div>
-            </div>
+              
+              <div class="col-xl-7 d-flex grid-margin stretch-card">
+                <div class="card">
+                  <div class="card-body">
+                    <div class="d-flex flex-wrap justify-content-between">
+                      <h4 class="card-title mb-2">Distribution of Annual Income By Age</h4>
+                    </div>
+                      <div class="col-12">
+                          <div>{{ income_graph|safe }}</div>
+                      </div>
+                  </div>
+                </div>
+                </div>
             </div>
             
             <div class="row">
@@ -123,7 +147,7 @@
                 <div class="card">
                   <div class="card-body">
                     <div class="d-flex flex-wrap justify-content-between">
-                      <h4 class="card-title mb-3">Customer Purchase Analytics</h4>
+                      <h4 class="card-title mb-3">Customer Purchase Feature Importance Using Random Forest</h4>
                     </div>
                     <div class="row">
                       <div class="col-lg-9">
