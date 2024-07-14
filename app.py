@@ -30,6 +30,8 @@ model.fit(X_train, y_train)
 
 # Make predictions
 y_pred = model.predict(X_test)
+
+#accuracy number
 number = accuracy_score(y_test, y_pred)
 accuracy = "{:.3f}%".format(number * 100)
 
@@ -37,18 +39,29 @@ accuracy = "{:.3f}%".format(number * 100)
 feature_importance = model.feature_importances_
 features = X.columns
 
-def plot_confusion_matrix(y_test, y_pred):
-    #Plot and save the confusion matrix
-    cm = confusion_matrix(y_test, y_pred)
-    plt.figure(figsize=(8, 6))
-    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['Class 0', 'Class 1'], yticklabels=['Class 0', 'Class 1'])
-    plt.xlabel('Predicted')
-    plt.ylabel('True')
-    plt.title('Confusion Matrix')
-    plot_path = 'static/confusion_matrix.png'
-    plt.savefig(plot_path)
-    plt.close()
-    return plot_path
+# Visualization for actual vs predicted purchase amounts
+actual_vs_predicted = pd.DataFrame({'Actual': y_test, 'Predicted': y_pred})
+x_values = np.arange(len(actual_vs_predicted))  # Use indices as x values
+y_actual = actual_vs_predicted['Actual']
+y_predicted = actual_vs_predicted['Predicted']
+# Calculate the coefficients for the linear regression line
+m, b = np.polyfit(x_values, y_actual, 1)  # 1 indicates linear fit
+# Create the regression line values
+regression_line = m * x_values + b
+# Create the figure
+actual_vs_predicted_fig = go.Figure()
+actual_vs_predicted_fig.add_trace(go.Scatter(x=x_values, y=y_actual, mode='markers', name='Actual', marker=dict(color='blue')))
+actual_vs_predicted_fig.add_trace(go.Scatter(x=x_values, y=y_predicted, mode='markers', name='Predicted', marker=dict(color='orange')))
+actual_vs_predicted_fig.add_trace(go.Scatter(x=x_values, y=regression_line, mode='lines', name='Regression Line', line=dict(color='red', dash='dash')))
+actual_vs_predicted_fig.update_layout(
+    xaxis_title='Index',
+    yaxis_title='Purchase Amount',
+    autosize=True,
+    width=1000,
+    height=500
+)
+actual_vs_predicted_graph = pio.to_html(actual_vs_predicted_fig, full_html=False)
+
 
 def get_classification_report(y_test, y_pred):
     #Generate and save the classification report
@@ -64,6 +77,21 @@ def get_classification_report(y_test, y_pred):
     plt.close()
     return plot_path
 
+
+def plot_confusion_matrix(y_test, y_pred):
+    #Plot and save the confusion matrix
+    cm = confusion_matrix(y_test, y_pred)
+    plt.figure(figsize=(8, 6))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['Class 0', 'Class 1'], yticklabels=['Class 0', 'Class 1'])
+    plt.xlabel('Predicted')
+    plt.ylabel('True')
+    plt.title('Confusion Matrix')
+    plot_path = 'static/confusion_matrix.png'
+    plt.savefig(plot_path)
+    plt.close()
+    return plot_path
+
+
 @app.route('/')
 def index():
     # Visualization 1: Age Range Line Graph
@@ -77,22 +105,52 @@ def index():
     age_range_graph = pio.to_html(age_range_fig, full_html=False)
     
     # Visualization 2: Distribution of Purchases by Product Category
-    category_hist = px.histogram(data, x='ProductCategory', labels={'ProductCategory':'Product Category', 'Number of Purchases(count)':'Number of Purchases'})
-    # Update layout to specify size
-    category_hist.update_layout(width=500, height=440)
-    # Convert the figure to HTML
-    category_graph = pio.to_html(category_hist, full_html=False)
+    category_pie = px.pie(data, 
+                           names='ProductCategory', 
+                           values='NumberOfPurchases', 
+                           labels={'ProductCategory': 'Product Category'})
+    # Update layout to customize size
+    category_pie.update_layout(width=400, height=400)
+    category_graph = pio.to_html(category_pie, full_html=False)
     
     # Visualization 3: Feature Importance
     feature_bar = go.Bar(x=features, y=feature_importance)
     feature_layout = go.Layout(xaxis=dict(title='Features'), yaxis=dict(title='Importance'))
     feature_fig = go.Figure(data=[feature_bar], layout=feature_layout)
-    feature_graph = pio.to_html(feature_fig, full_html=False)
+    feature_graph = pio.to_html(feature_fig, full_html=False) 
+    
+    # Visualization 4: Distribution of Time Spent on Website
+    time_spent_bar = px.bar(data, x='ProductCategory', y='TimeSpentOnWebsite', 
+                            labels={'TimeSpentOnWebsite': 'Time Spent on Website (minutes)', 'ProductCategory': 'Product Category'}, 
+                            color='ProductCategory', barmode='stack')
+    time_spent_graph = pio.to_html(time_spent_bar, full_html=False)
 
+    # Visualization 5: Distribution of Annual Income
+    average_income = data.groupby('Age')['AnnualIncome'].mean().reset_index()
+
+    compound_fig = go.Figure()
+    compound_fig.add_trace(go.Scatter(
+        x=average_income['Age'],
+        y=average_income['AnnualIncome'],
+        mode='lines+markers',
+        name='Average Annual Income',
+        line=dict(shape='spline')  # Smooth line
+    ))
+    
+    compound_fig.update_layout(
+        xaxis_title='Age',
+        yaxis_title='Average Annual Income',
+        width=600, height=400
+    )
+    income_graph = pio.to_html(compound_fig, full_html=False)
+    
+    
     return render_template('index.html', 
                            age_range_graph=age_range_graph, 
                            category_graph=category_graph,
                            feature_graph=feature_graph,
+                           time_spent_graph=time_spent_graph,
+                           income_graph=income_graph,
                            accuracy=accuracy)
 
 @app.route('/home')
@@ -102,10 +160,10 @@ def home():
 @app.route('/performance')
 def performance():
     # Generate plots
-    confusion_matrix_path = plot_confusion_matrix(y_test, y_pred)
     classification_report_path = get_classification_report(y_test, y_pred)
+    confusion_matrix_path = plot_confusion_matrix(y_test, y_pred)
     
-    return render_template('model.html', output=accuracy, confusion_matrix_url=confusion_matrix_path, classification_report_url=classification_report_path)
+    return render_template('model.html', output=accuracy, actual_vs_predicted_graph=actual_vs_predicted_graph, classification_report_url=classification_report_path, confusion_matrix_url=confusion_matrix_path)
 
 if __name__ == '__main__':
     app.run(debug=True)
